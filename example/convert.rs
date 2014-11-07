@@ -15,17 +15,23 @@ fn main() {
         for refs in rx.iter() {
             let mut bytes = refs.iter().map(|&q| q);
             for b in bytes {
-                print!("{:08t}", b);
+                print!("{:08t} ", b);
             }
         }
         println!("");
     });
 
     for arg in args.slice(1, args.len()).iter() {
-        let x_opt: Option<uint> = from_str(arg.as_slice().trim());
+        let x_opt: Option<int> = from_str(arg.as_slice().trim());
         let x = x_opt.unwrap();
 
-        out.write_uint(x).ok().expect("failed to write");
+        out.write(x, |u| {
+            if u >= 0 {
+                2 * u as uint
+            } else {
+                (-(2 * u) + 1) as uint
+            }
+        }).ok().expect("failed to write");
     }
     out.flush().ok().expect("failed to flush");
 }

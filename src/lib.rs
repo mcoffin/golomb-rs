@@ -27,12 +27,19 @@ impl<T: io::Writer> Encoder<BitBuffer<T>> {
 }
 
 impl<T: BitWriter> Encoder<T> {
+    /// Generic write function for anything that can be translated into a uint
+    pub fn write<A>(&mut self, a: A, strategy: |A| -> uint) -> io::IoResult<()> {
+        self.write_uint(strategy(a))
+    }
+
+    /// Writes a uint to the encoder
     pub fn write_uint(&mut self, a: uint) -> io::IoResult<()> {
         let size = bit_len(a);
         try!(self.out.write_bits(0x0, size - 1));
         self.out.write_bits(a, size)
     }
 
+    /// Flushes the Encoder
     pub fn flush(&mut self) -> io::IoResult<()> {
         self.out.flush()
     }
