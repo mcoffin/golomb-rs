@@ -24,6 +24,7 @@ fn main() {
         println!("");
 
         let bytes_ref = w.get_ref();
+        println!("Compressed to {} bytes", bytes_ref.len());
         let v = collections::bitv::from_bytes(bytes_ref);
         let mut int_iter = golomb::Decoder::new(v.iter()).map(|u| -> int {
             if (u & 0x01) != 0 {
@@ -50,5 +51,6 @@ fn main() {
             }
         }).ok().expect("failed to write");
     }
+    println!("Compressing {} bytes", (args.len()-1) * std::mem::size_of::<int>());
     out.flush().ok().expect("failed to flush");
 }
