@@ -2,6 +2,7 @@ extern crate golomb;
 
 use std::os;
 use std::io;
+use std::collections;
 
 fn main() {
     let args = os::args();
@@ -12,11 +13,27 @@ fn main() {
     let mut out = golomb::Encoder::new(io::ChanWriter::new(tx));
 
     spawn(proc() {
+        let mut w = io::MemWriter::new();
         for refs in rx.iter() {
             let mut bytes = refs.iter().map(|&q| q);
             for b in bytes {
                 print!("{:08t} ", b);
+                w.write_u8(b).ok().expect("buffer sizing error");
             }
+        }
+        println!("");
+
+        let bytes_ref = w.get_ref();
+        let v = collections::bitv::from_bytes(bytes_ref);
+        let mut int_iter = golomb::Decoder::new(v.iter()).map(|u| -> int {
+            if (u & 0x01) != 0 {
+                ((u as int) - 1) / -2
+            } else {
+                (u as int) / 2
+            }
+        });
+        for i in int_iter {
+            print!("{:d} ", i);
         }
         println!("");
     });
